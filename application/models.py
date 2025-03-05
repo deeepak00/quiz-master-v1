@@ -1,4 +1,9 @@
 from .database import db
+from zoneinfo import ZoneInfo
+from datetime import datetime
+
+def get_local_time():
+    return datetime.now(ZoneInfo("Asia/Kolkata"))
 
 class Admin(db.Model):
     __tablename__ = 'admin'
@@ -75,7 +80,7 @@ class Score(db.Model):
     __tablename__='scores'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     total_scored = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    timestamp = db.Column(db.DateTime, default=get_local_time)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizes.id'), nullable=False)
