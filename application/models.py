@@ -2,8 +2,10 @@ from .database import db
 from zoneinfo import ZoneInfo
 from datetime import datetime
 
+
 def get_local_time():
     return datetime.now(ZoneInfo("Asia/Kolkata"))
+    
 
 class Admin(db.Model):
     __tablename__ = 'admin'
