@@ -284,6 +284,44 @@ def question_read(question_id):
     
     
 
+@app.route("/search", methods=['POST'])
+def search():
+    string = request.form.get('string')
+    field = request.form.get('field')
+    if not string:
+        return 'Please Enter something to serch'
+    results=[]
+    if field=="users":
+        if string=="*":
+            results = User.query.all()
+        else:
+            results = User.query.filter(User.username.ilike(f'%{string}%')).all()
+    elif field=="chapters":
+        if string=="*":
+            results = Chapter.query.all()
+        else:
+            results = Chapter.query.filter(Chapter.name.ilike(f'%{string}%')).all()
+    elif field=="subjects":
+        if string=="*":
+            results = Subject.query.all()
+        else:
+            results = Subject.query.filter(Subject.name.ilike(f'%{string}%')).all()
+    elif field=="quizes":
+        if string=="*":
+            results = Quiz.query.all()
+        else:
+            results= Quiz.query.filter(Quiz.title.ilike(f'%{string}%')).all()
+    elif field=="questions":
+        if string=="*":
+            results = Question.query.all()
+        else:
+            results = Question.query.filter(Question.question.ilike(f'%{string}%')).all()
+    
+    return render_template('search.html', results=results,field=field,string=string)
+    
+    
+    
+
 
 
 @app.route('/user_dash/<int:user_id>', methods=['GET','POST'])
@@ -408,5 +446,55 @@ def subject_wise_quiz_chart(data,total):
     # Save the chart in 'static' folder
     plt.savefig("static/subject-wise-quiz-chart.png", dpi=150, bbox_inches='tight')
     plt.close()
+    
+    
+
+@app.route("/user_search/<int:user_id>", methods=['POST'])
+def user_search(user_id):
+        user = User.query.filter(User.id==user_id).first()
+        string = request.form.get('string')
+        field = request.form.get('field')
+        if not string:
+            return 'Please Enter something to search'
+        results=[]
+        if field=="chapters":
+            if string=="*":
+                results = Chapter.query.all()
+            else:
+                results = Chapter.query.filter(Chapter.name.ilike(f'%{string}%')).all()
+        elif field=="subjects":
+            if string=="*":
+                results = Subject.query.all()
+            else:
+                results = Subject.query.filter(Subject.name.ilike(f'%{string}%')).all()
+        elif field=="quizes":
+            if string=="*":
+                results = Quiz.query.all()
+            else:
+                results= Quiz.query.filter(Quiz.title.ilike(f'%{string}%')).all()
+        
+        return render_template('user_search.html', results=results,field=field,string=string,user=user)
+
+
+
+
+
+@app.route("/user_subject_read/<int:user_id>/<int:subject_id>", methods=['GET','POST'])
+def user_subject_read(user_id,subject_id):
+    subject = Subject.query.filter(Subject.id==subject_id).first()
+    user = User.query.filter(User.id==user_id).first()
+    return render_template('user_subject_read.html', user=user, subject=subject)
+
+@app.route("/user_chapter_read/<int:user_id>/<int:chapter_id>", methods=['GET','POST'])
+def user_chapter_read(user_id,chapter_id):
+    chapter = Chapter.query.filter(Chapter.id==chapter_id).first()
+    user = User.query.filter(User.id==user_id).first()
+    return render_template('user_chapter_read.html', user=user, chapter=chapter)
+
+@app.route("/user_quiz_read/<int:user_id>/<int:quiz_id>", methods=['GET','POST'])
+def user_quiz_read(user_id,quiz_id):
+    quiz = Quiz.query.filter(Quiz.id==quiz_id).first()
+    user = User.query.filter(User.id==user_id).first()
+    return render_template('user_quiz_read.html', user=user, quiz=quiz)
 
 
