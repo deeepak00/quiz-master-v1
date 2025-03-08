@@ -303,5 +303,110 @@ def user_quizview(user_id,quiz_id):
     chapter = quiz.chapters
     subject = chapter.subjects
     return render_template('user_quizview.html',quiz=quiz,chapter=chapter,subject=subject,user_id=user_id)
+    
+
+@app.route('/user_score/<int:user_id>', methods=['GET','POST'])
+def user_score(user_id):
+    user = User.query.filter(User.id==user_id).first()
+    quizes = user.quizes
+    return render_template('user_score.html',user = user, quizes=quizes)
+
+
+@app.route("/user_summary/<int:user_id>", methods=['GET','POST'])
+def user_summary(user_id):
+    subjectwise_no_of_quiz = {}
+    subjectwise_score = {}
+    total_number_of_quiz = 0
+    subjects = Subject.query.all()
+    user = User.query.filter(User.id==user_id).first()
+    quiz = Quiz.query.all()
+    for i in quiz:
+        total_number_of_quiz+=1
+    quizes = user.quizes
+    for quiz in quizes:
+        chapter = Chapter.query.filter(Chapter.id==quiz.chapter_id).first()
+        subject = Subject.query.filter(Subject.id==chapter.subject_id).first()
+
+        if subject.name not in subjectwise_no_of_quiz:
+            subjectwise_no_of_quiz[subject.name]=1
+        else:
+            subjectwise_no_of_quiz[subject.name]+=1
+        
+        total_score = sum([i.total_scored for i in quiz.scores])
+        no_of_ques = sum([1 for _ in quiz.questions])
+        if subject.name not in subjectwise_score:
+            subjectwise_score[subject.name]=total_score/no_of_ques
+        else:
+            subjectwise_score[subject.name]+=total_score/no_of_ques
+
+    for x in subjectwise_score:
+        subjectwise_score[x] = round((subjectwise_score[x]/subjectwise_no_of_quiz[x])*100,2)
+ 
+    for x in subjects:
+        if x.name not in subjectwise_no_of_quiz:
+            subjectwise_no_of_quiz[x.name]=0
+        if x.name not in subjectwise_score:
+            subjectwise_score[x.name]=0
+    
+
+    
+    subject_wise_quiz_chart(subjectwise_no_of_quiz,total_number_of_quiz)
+    subjectwise_score_chart(subjectwise_score)
+
+    return render_template('user_summary.html',user=user)
+
+def subjectwise_score_chart(data):
+    subjects = list(data.keys())  # X-axis (Subjects)
+    score = list(data.values())  # Y-axis (Scores)
+
+    plt.figure(figsize=(3,2))
+
+    # All bars will be black
+    plt.bar(subjects, score, color='black')
+
+    plt.xlabel("Subjects")
+    plt.ylabel("Average marks  ")
+    plt.title("Subject wise avg. Marks")
+    plt.xticks(rotation=20)  # Rotate labels for readability
+    plt.ylim(0,100)
+    
+
+    for i, v in enumerate(score):
+        plt.text(i, v+0.5, str(v)+"%", ha='center', fontsize=5)
+
+    
+    plt.grid(axis='y', linestyle='--', alpha=0.2)
+
+    # Save the chart in 'static' folder
+    plt.savefig("static/subjectwise-score.png", dpi=150, bbox_inches='tight')
+    plt.close()
+
+
+
+def subject_wise_quiz_chart(data,total):
+    subjects = list(data.keys())  # X-axis (Subjects)
+    count = list(data.values())  # Y-axis (Scores)
+
+    plt.figure(figsize=(3,2))
+
+    # All bars will be black
+    plt.bar(subjects, count, color='black')
+
+    plt.xlabel("Subjects")
+    plt.ylabel("No. of quizz attemped")
+    plt.title("Subject wise number of quiz attempted")
+    plt.xticks(rotation=20)  # Rotate labels for readability
+    plt.ylim(0,total)
+    
+
+    for i, v in enumerate(count):
+        plt.text(i, v+0.5, str(v), ha='center', fontsize=5)
+
+    
+    plt.grid(axis='y', linestyle='--', alpha=0.2)
+
+    # Save the chart in 'static' folder
+    plt.savefig("static/subject-wise-quiz-chart.png", dpi=150, bbox_inches='tight')
+    plt.close()
 
 
