@@ -496,5 +496,45 @@ def user_quiz_read(user_id,quiz_id):
     quiz = Quiz.query.filter(Quiz.id==quiz_id).first()
     user = User.query.filter(User.id==user_id).first()
     return render_template('user_quiz_read.html', user=user, quiz=quiz)
+    
+    
+@app.route("/quiz_handle/<int:user_id>/<int:quiz_id>", methods=['GET','POST'])
+def quiz_handle(user_id, quiz_id):
+    quiz = Quiz.query.filter(Quiz.id == quiz_id).first()
+    user = User.query.filter(User.id == user_id).first()
+
+    exist1 = UserQuiz.query.filter(UserQuiz.user_id==user_id,UserQuiz.quiz_id==quiz_id).first()
+
+    if not exist1:
+        user.quizes.append(quiz)
+        db.session.commit()
+
+    exist2 = Score.query.filter(Score.user_id==user.id, Score.quiz_id==quiz.id).first()
+    if not exist2:
+        score = Score(total_scored=0,user_id=user.id,quiz_id=quiz.id)
+        db.session.add(score)
+        db.session.commit()
+
+    questions = quiz.questions
+    total_scored = 0
+    if request.method == 'POST':
+        for question in questions:
+            if request.form.get(f'{question.id}') == question.correct_option:
+                total_scored += 1
+        score = Score.query.filter(Score.user_id==user.id, Score.quiz_id==quiz.id).first()
+        score.total_scored = total_scored
+        db.session.commit()
+        return render_template('user_result.html', user=user, quiz = quiz , total_scored = total_scored)
+    
+    hh, mm = map(int, quiz.time_duration.split(":"))
+    total_seconds = (hh * 3600) + (mm * 60)
+    
+    return render_template(
+        'quiz_page.html',
+        questions=questions,
+        quiz=quiz,
+        user=user,
+        quiz_duration=total_seconds 
+    )
 
 
