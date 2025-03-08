@@ -281,5 +281,27 @@ def edit_question(question_id):
 def question_read(question_id):
     question = Question.query.filter(Question.id==question_id).first()
     return render_template("read_question.html",question=question)
+    
+    
+
+
+
+@app.route('/user_dash/<int:user_id>', methods=['GET','POST'])
+def user_dash(user_id):
+    user = User.query.filter(User.id==user_id).first()
+    quizes = Quiz.query.order_by(Quiz.id.desc()).all()
+    userquiz = UserQuiz.query.all()
+    attempted = [(i.user_id, i.quiz_id) for i in userquiz]
+    return render_template("user_dash.html",user=user,quizes=quizes,attempted=attempted)
+    
+
+@app.route('/user_quizview/<int:user_id>/<int:quiz_id>', methods=['GET','POST'])
+def user_quizview(user_id,quiz_id):
+    if request.method=='POST':
+        return redirect(f'/user_dash/{user_id}')
+    quiz = Quiz.query.filter(Quiz.id==quiz_id).first()
+    chapter = quiz.chapters
+    subject = chapter.subjects
+    return render_template('user_quizview.html',quiz=quiz,chapter=chapter,subject=subject,user_id=user_id)
 
 
