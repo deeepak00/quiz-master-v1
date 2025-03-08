@@ -527,11 +527,12 @@ def subject_wise_quiz_chart(data,total):
     plt.title("Subject wise number of quiz attempted")
     plt.xticks(rotation=20)  # Rotate labels for readability
     plt.ylim(0, total)
+    plt.yticks(range(int(min(count)), int(max(count))+1))
     
     
 
     for i, v in enumerate(count):
-        plt.text(i, v+0.01, str(v), ha='center', fontsize=5)
+        plt.text(i, v+0.019, str(v), ha='center', fontsize=5)
 
     
     plt.grid(axis='y', linestyle='--', alpha=0.2)
