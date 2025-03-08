@@ -264,6 +264,7 @@ def edit_question(question_id):
         if request.method=='POST':
             action = request.form.get('action')
             if action=="Save":
+                question.title = request.form.get('qntitle')
                 question.question = request.form.get('question')
                 question.option_a = request.form.get('op1')
                 question.option_b = request.form.get('op2')
@@ -482,7 +483,7 @@ def user_summary(user_id):
     subject_wise_quiz_chart(subjectwise_no_of_quiz,total_number_of_quiz)
     subjectwise_score_chart(subjectwise_score)
 
-    return render_template('user_summary.html',user=user)
+    return render_template('user_summary.html',user=user, total = total_number_of_quiz)
 
 def subjectwise_score_chart(data):
     subjects = list(data.keys())  # X-axis (Subjects)
@@ -525,11 +526,12 @@ def subject_wise_quiz_chart(data,total):
     plt.ylabel("No. of quizz attemped")
     plt.title("Subject wise number of quiz attempted")
     plt.xticks(rotation=20)  # Rotate labels for readability
-    plt.ylim(0,total)
+    plt.ylim(0, total)
+    
     
 
     for i, v in enumerate(count):
-        plt.text(i, v+0.5, str(v), ha='center', fontsize=5)
+        plt.text(i, v+0.01, str(v), ha='center', fontsize=5)
 
     
     plt.grid(axis='y', linestyle='--', alpha=0.2)
