@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            padding-top: 1.5rem;
+        }
+        #timer {
+            font-size: 32px;
+            font-weight: bold;
+            color: black;
+            position: absolute;
+            top: 65px;
+            right: 1100px;
+        }
+        #qnsbody{
+            border: 2px solid white;
+            padding: 30px;
+            height: 573px;
+            border-radius: 10px;
+        }
+        #main{
+            padding: 20px;
+        }
+        #qbody{
+            border: 2px solid black;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            padding: 20px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div id="main">
+        <h1 style="text-align: center;">{{quiz.title}}</h1>
+        
+        <div id="timer"></div> <!-- Timer display -->
+
+        <hr>
+
+        <div id="qnsbody">
+            <form id="quizForm" action="/quiz_handle/{{ user.id }}/{{ quiz.id }}" method="post">
+                <div style="overflow-y: auto; max-height: 500px; padding: 5px;">
+                    {% for question in questions %}
+                    <div id="qbody">
+                        <label>({{loop.index}}). {{ question.question }}</label><br><br>
+                        <div style="padding-left: 40px; padding-bottom: 10px;">
+                            <input type="radio" name="{{ question.id }}" value="1"> {{ question.option_a }} <br>
+                            <input type="radio" name="{{ question.id }}" value="2"> {{ question.option_b }} <br>
+                            <input type="radio" name="{{ question.id }}" value="3"> {{ question.option_c }} <br>
+                            <input type="radio" name="{{ question.id }}" value="4"> {{ question.option_d }} <br>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+                <div style="text-align: center; padding: 5px;">
+                    <input type="submit" name="action" value="Submit" class="btn btn-outline-secondary" style="text-align: center;">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let duration = parseInt("{{ quiz_duration }}", 10); // Ensure it's an integer
+            let timerDisplay = document.getElementById("timer");
+            let quizForm = document.getElementById("quizForm");
+    
+            function updateTimer() {
+                let hours = Math.floor(duration / 3600);
+                let minutes = Math.floor((duration % 3600) / 60);
+                let seconds = duration % 60;
+                timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                if (duration === 0) {
+                    quizForm.submit();  // Auto-submit when time is up
+                } else {
+                    duration--;
+                    setTimeout(updateTimer, 1000);
+                }
+            }
+    
+            updateTimer(); // Start timer
+        });
+    </script>
+    
+</body>
+</html>

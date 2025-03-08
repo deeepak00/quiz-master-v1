@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Subject</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        .mb-3{
+            display: flex;
+        }
+        label{
+            width: 30%;
+
+        }
+        #canvas{
+            height: 360px;
+            width: 580px;
+        }
+        textarea{
+            resize: none;
+        }
+        .navbar{
+            padding-top: 1.5rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div id="nav">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                  <h5><a class="navbar-brand" href="#">QuizMaster |</a></h5>
+                  
+                  <div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-top: -8px;">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                      <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/admin_dash">Home</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/admin_quiz">Quiz</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/admin_summary">Summary</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/login">Logout</a>
+                      </li>
+                    </ul>
+                    <!-- <form class="d-flex">
+                      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                      <button class="btn btn-outline-success" type="submit">Search</button>
+                      <h3 style="white-space: nowrap; margin-left: 20px;">Welcome Admin</h3>
+                    </form> -->
+                    <form class="d-flex" action="/search" method="post">
+                      <div style="display: flex; gap: 5px;">
+                        <div>
+                          <input type="text" placeholder="Search" style="width: 100px; height: 24px; border-radius: 3px; padding: 2px;" title="type anything specific or '*' for All" name="string" required>
+                          <br>
+                          <select name="field" style="width: 100px; height: 20px; border-radius: 3px;">
+                            <option value="users">Users</option>
+                            <option value="chapters">Chapters</option>
+                            <option value="subjects">Subjects</option>
+                            <option value="quizes">Quizes</option>
+                            <option value="questions">Questions</option>
+                          </select>
+                        </div>
+                        <div>
+                          <button type="submit" style="width: 29px; height: 29px; border-radius:50%;" title="search">🔍</button>
+                        </div>
+                      </div>
+                      <h3 style="white-space: nowrap; margin-left: 20px;">Welcome Admin</h3>
+                    </form>
+                  </div>
+                </div>
+              </nav>
+        </div>
+        <div id="canvas">
+            <div id="form-body">
+                <h3>Update Subject</h3><br>
+                <form action="/{{subject.id}}/edit" method="post">
+                    <div class="mb-3">
+                        <label for="Input1" class="form-label">Subject's Name: </label>
+                        <input type="text" class="form-control" id="Input1" name="name" value="{{subject.name}}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="Input2" class="form-label">Description: </label>
+                        <textarea class="form-control" id="Input2" rows="4" name="description">{{subject.description}}</textarea>
+                      </div>
+                    <br>
+                    <div style="text-align: center;">
+                        <input type="submit" class="btn btn-outline-secondary" value="Save" name="action">
+                        <input type="submit" class="btn btn-outline-secondary" value="Cancel" name="action">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

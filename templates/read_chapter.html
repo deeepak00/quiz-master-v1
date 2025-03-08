@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Chapter</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        .navbar{
+            padding-top: 1.5rem;
+        }
+        #canvas{
+            width: 1097px;
+            height: auto;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div id="nav">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <h5><a class="navbar-brand" href="#">QuizMaster |</a></h5>
+                    
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-top: -8px;">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/admin_dash">Home</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="/admin_quiz">Quiz</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="/admin_summary">Summary</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="/login">Logout</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex" action="/search" method="post">
+                        <div style="display: flex; gap: 5px;">
+                        <div>
+                            <input type="text" placeholder="Search" style="width: 100px; height: 24px; border-radius: 3px; padding: 2px;" title="type anything specific or '*' for All" name="string" required>
+                            <br>
+                            <select name="field" style="width: 100px; height: 20px; border-radius: 3px;">
+                            <option value="users">Users</option>
+                            <option value="chapters">Chapters</option>
+                            <option value="subjects">Subjects</option>
+                            <option value="quizes">Quizes</option>
+                            <option value="questions">Questions</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" style="width: 29px; height: 29px; border-radius:50%;" title="search">🔍</button>
+                        </div>
+                        </div>
+                        <h3 style="white-space: nowrap; margin-left: 20px;">Welcome Admin</h3>
+                    </form>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div id="canvas" style="padding: 20px;">
+            <h3 style="text-align: center;">About Chapter</h3><br>
+          <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Subject ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{chapter.id}}</td>
+                    <td>{{chapter.name}}</td>
+                    <td>{{chapter.description}}</td>
+                    <td><a href="/subject_read/{{chapter.subject_id}}">{{chapter.subject_id}}</a></td>
+                </tr>
+            </tbody>
+          </table> 
+          <br>
+          <a href="/admin_dash">Go to Admin DashBoard</a>
+        </div>
+    </div>
+</body>
+</html>

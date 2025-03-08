@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        .navbar{
+            padding-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div id="nav">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                  <h5><a class="navbar-brand" href="#">QuizMaster |</a></h5>
+                  
+                  <div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-top: -8px;">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                      <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/admin_quiz">Quiz</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/admin_summary">Summary</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="/login">Logout</a>
+                      </li>
+                    </ul>
+                    <!-- <form class="d-flex">
+                      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                      <button class="btn btn-outline-success" type="submit">Search</button>
+                      <h3 style="white-space: nowrap; margin-left: 20px;">Welcome Admin</h3>
+                    </form> -->
+                    <form class="d-flex" action="/search" method="post">
+                      <div style="display: flex; gap: 5px;">
+                        <div>
+                          <input type="text" placeholder="search..." style="width: 100px; height: 24px; border-radius: 3px; padding: 2px;" title="type anything specific or '*' for All" name="string" required>
+                          <br>
+                          <select name="field" style="width: 100px; height: 20px; border-radius: 3px;">
+                            <option value="users">Users</option>
+                            <option value="chapters">Chapters</option>
+                            <option value="subjects">Subjects</option>
+                            <option value="quizes">Quizes</option>
+                            <option value="questions">Questions</option>
+                          </select>
+                        </div>
+                        <div>
+                          <button type="submit" style="width: 29px; height: 29px; border-radius:50%;" title="search">🔍</button>
+                        </div>
+                      </div>
+                      <h3 style="white-space: nowrap; margin-left: 20px;">Welcome Admin</h3>
+                    </form>
+                  </div>
+                </div>
+              </nav>
+        </div>
+
+        <div id="admin-dash-body">
+            {% for subject in subjects %}
+            <div class="subject-block">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px;position: relative;">
+                <h4 style="margin: 0; flex-grow: 1; text-align: center;"><a href="/subject_read/{{subject.id}}">{{subject.name}}</a></h4>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/{{subject.id}}/edit" title="Update Subject" style="text-decoration: none;color:black; border: 1px solid black;height: 24px;"><h5>&#9998;</h5></a>
+                    <a href="/{{subject.id}}/delete" title="Delete Subject" style="text-decoration: none;color:black; border: 1px solid black; height: 24px;" ><h4 style="margin-top: -4px;">&#10060;</h4></a>
+                </div>
+              </div>
+              <div id="item-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chapter Name</th>
+                            <th>No. of Question</th>
+                            <th>Action to Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chapter in subject.chapters %}
+                        <tr>
+                            <td><a href="/chapter_read/{{chapter.id}}">{{chapter.name}}</a></td>
+                            <td>{{chapter.questions|length}}</td>
+                            <td><a href="/admin_dash/{{chapter.id}}/edit" class="btn btn-outline-secondary">Edit</a> <a href="/admin_dash/{{chapter.id}}/delete" class="btn btn-outline-secondary">Delete</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+              </div>
+                <div id="add-item" style="text-align: center; margin-top: 3px;">
+                    <a href="/add_chapter/{{subject.id}}" class="btn btn-outline-secondary"><h6>Add New Chapter</h6></a>
+                </div>
+            </div> 
+            {% endfor %} 
+        </div>
+
+        <div id="add-item" style="text-align: center; margin-top: 20px;">
+            <a href="/add_subject" class="btn btn-outline-secondary"><h4>Add New Subject</h4></a>
+        </div>
+    </div>
+</body>
+</html>

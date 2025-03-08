@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>User Dashboard</title>
+      <link rel="stylesheet" href="/static/style.css">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+      <style>
+          .navbar{
+              padding-top: 1.5rem;
+          }
+
+          .col6{
+            width: 120px;
+          }
+          .col5{
+            width: 200px;
+          }
+      </style>
+  </head>
+  <body>
+      <div id="main">
+          <div id="nav">
+              <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                  <div class="container-fluid">
+                    <h5><a class="navbar-brand" href="#">QuizMaster |</a></h5>
+                    
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-top: -8px;">
+                      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                          <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="/user_score/{{user.id}}">Score</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="/user_summary/{{user.id}}">Summary</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="/login">Logout</a>
+                        </li>
+                      </ul>
+                      <form class="d-flex" action="/user_search/{{user.id}}" method="post">
+                        <div style="display: flex; gap: 5px;">
+                          <div>
+                            <input type="text" placeholder="Search" style="width: 100px; height: 24px; border-radius: 3px; padding: 2px;" title="type anything specific & '*' for All" name="string" required>
+                            <br>
+                            <select name="field" style="width: 100px; height: 20px; border-radius: 3px;">
+                              <option value="subjects">Subjects</option>
+                              <option value="chapters">Chapters</option>
+                              <option value="quizes">Quizes</option>
+                            </select>
+                          </div>
+                          <div>
+                            <button type="submit" style="width: 29px; height: 29px; border-radius:50%;" title="search">🔍</button>
+                          </div>
+                        </div>
+                        <h3 style="white-space: nowrap; margin-left: 20px;">Welcome {{user.full_name.split(" ")[0]}}</h3>
+                      </form>
+                    </div>
+                  </div>
+                </nav>
+          </div>  
+
+          <div id="user-dash-body">
+            <br>
+            <h2 style="text-align: center;"><i>Upcoming Quizes</i></h2>
+            <div id="upcoming-quiz-body">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>ID</th>
+                    <th>Number of<br>questions</th>
+                    <th>Date</th>
+                    <th>Duration<br>(hh:mm)</th>
+                    <th class="col5">Action</th>
+                    <th class="col6">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for quiz in quizes %}
+                  <tr>
+                    <td>{{loop.index}}</td>
+                    <td><a href="/user_chapter_read/{{user.id}}/{{quiz.id}}">{{quiz.id}}</a></td>
+                    <td>{{quiz.questions|length}}</td>
+                    <td>{{quiz.date_of_quiz}}</td>
+                    <td>{{quiz.time_duration}}</td>
+                    <td><a href="/user_quizview/{{user.id}}/{{quiz.id}}" class="btn btn-outline-secondary">View</a> {% if quiz.questions|length == 0%} <a href="" class="btn btn-outline-secondary" style="pointer-events: none;">Start</a> {% elif (user.id, quiz.id) in attempted %} <a href="/quiz_handle/{{user.id}}/{{quiz.id}}" class="btn btn-outline-secondary">Reattempt</a> {% else %} <a href="/quiz_handle/{{user.id}}/{{quiz.id}}" class="btn btn-outline-secondary">Start</a> {% endif %}</td>
+                    <td>{% if (user.id, quiz.id) in attempted %} &#10004;Attempted {% else %} - {% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+           
+            </div>
+          </div>
+      </div>
+    </body>
+</html>
