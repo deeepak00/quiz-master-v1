@@ -283,6 +283,97 @@ def question_read(question_id):
     return render_template("read_question.html",question=question)
     
     
+    
+@app.route('/admin_summary')
+def summary():
+    total_user = User.query.count()  # Get total users efficiently
+    if total_user == 0:
+        total_user = 1  # Avoid division by zero
+    
+    sub_maxscore_dict = {}
+    sub_usercount_dict = {}
+
+    subjects = Subject.query.all()
+    for subject in subjects:
+         # Reset for each subject
+        sub_user = 0 
+        sub_maxscore = 0
+        total_questions = 1  # Default to 1 to avoid division by zero
+
+        for chapter in subject.chapters:
+            for quiz in chapter.quizes:
+                if quiz.scores and quiz.questions:  # Check if scores and questions exist
+                    max_quiz_score = max(score.total_scored for score in quiz.scores)
+                    num_questions = len(quiz.questions)  # Total number of questions in the quiz
+
+                    if max_quiz_score > sub_maxscore:
+                        sub_maxscore = max_quiz_score
+                        total_questions = num_questions
+
+                    for _ in quiz.users:  # Count users who took this quiz
+                        sub_user += 1
+
+        sub_usercount_dict[subject.name] = round(min((sub_user / total_user) * 100, 100), 2)
+        sub_maxscore_dict[subject.name] = round(min((sub_maxscore / total_questions) * 100, 100), 2)
+
+
+    if sub_usercount_dict:
+        generate_subject_attempt_by_user(sub_usercount_dict)
+
+    if sub_maxscore_dict:
+        generate_subject_top_scores_chart(sub_maxscore_dict)
+
+    return render_template('admin_summary.html',sub_usercount_dict=sub_usercount_dict)
+
+
+def generate_subject_attempt_by_user(data):
+    labels = list(data.keys())
+    sizes = list(data.values())
+
+    plt.figure(figsize=(3,2))
+
+    plt.bar(labels,sizes,color='black')
+    plt.xlabel('subjects')
+    plt.ylabel('percentage attempt')
+    plt.xticks(rotation=20)
+    plt.ylim(0,100)
+
+    for i, v in enumerate(sizes):
+        plt.text(i, v+1, str(v)+" %", ha='center', fontsize=5)
+
+    plt.grid(axis='y',linestyle='--',alpha=0.2)
+
+    plt.title("Subject wise attempting percentage")
+
+    plt.savefig("static/subject_attempt_percentage.png", dpi=140, bbox_inches="tight")
+    plt.close()
+
+def generate_subject_top_scores_chart(sub_maxscore_dict):
+    subjects = list(sub_maxscore_dict.keys())  # X-axis (Subjects)
+    scores = list(sub_maxscore_dict.values())  # Y-axis (Scores)
+
+    plt.figure(figsize=(3,2))
+
+    # All bars will be black
+    plt.bar(subjects, scores, color='black')
+
+    plt.xlabel("Subjects")
+    plt.ylabel("Top Score")
+    plt.title("Subject Wise Top Scores")
+    plt.xticks(rotation=20)  # Rotate labels for readability
+    plt.ylim(0,100)
+
+    for i, v in enumerate(scores):
+        plt.text(i, v+1, str(v)+" %", ha='center', fontsize=5)
+
+    
+    plt.grid(axis='y', linestyle='--', alpha=0.2)
+
+    # Save the chart in 'static' folder
+    plt.savefig("static/subject-top-scores.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    
 
 @app.route("/search", methods=['POST'])
 def search():
