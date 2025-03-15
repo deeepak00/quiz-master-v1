@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, url_for, redirect,session
+from flask import Flask, render_template, request, url_for, redirect,session,flash
 from flask import current_app as app
+from app import api
 from datetime import datetime
 import matplotlib.pyplot as plt
 
@@ -20,15 +21,19 @@ def login():
             if admin:
                 if (admin.username==username and admin.password==password):
                     return redirect('/admin_dash')
-                return render_template('wrong_admin_credentials.html')
-            return render_template('not_exist.html', msgto='admin')
+                flash('Wrong Admin Credentials. Try again','wac')
+                return redirect("/login")
+            flash("This admin doesn't exist",'not_admin')
+            return redirect("/login")
         if type=="user":
             user = User.query.filter(User.username==username).first()
             if user:
                 if user.password==password:
                     return redirect(f'/user_dash/{user.id}')
-                return render_template('wrong_user_credentials.html')
-            return render_template('not_exist.html', msgto='user')
+                flash('Wrong User Credentials. Try again','wuc')
+                return redirect("/login")
+            flash("This user doesn't exist. Register first",'not_user')
+            return redirect("/login")
     return render_template('login.html')
 
 @app.route("/register",methods=['GET','POST'])
@@ -45,8 +50,10 @@ def register():
             new_user = User(username=username,password=password,full_name=full_name,qualification=qualification,dob=dob)
             db.session.add(new_user)
             db.session.commit()
-            return 'Registration Successfull. Now login'
-        return 'Already Exist username. Try registreing with New username'
+            flash('Registration successful! Please log in.', 'success')
+            return redirect('/login')
+        flash('Already Exist username. Try registreing with New username','exist')
+        return redirect('/register')
     return render_template("register.html")
 
 
@@ -625,7 +632,7 @@ def quiz_handle(user_id, quiz_id):
     
     return render_template(
         'quiz_page.html',
-        questions=questions,
+        questions=questions, 
         quiz=quiz,
         user=user,
         quiz_duration=total_seconds 

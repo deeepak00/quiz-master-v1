@@ -10,21 +10,36 @@
 <body>
     <div id="main">
         <h1 style="text-align: center;">Quiz Master</h1><hr style="border: 2px solid black;">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category=='exist' %}
+                        <div id="flash-message" role="alert" style="margin-left: 335px; position: relative;top: -12px;">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+
         <div id="canvas" style="margin-top: 15px; height: 595px;">
             <div id="form-body">
                 <h2>Registration Form</h2>
                 <form action="/register" method="post">
                     <div class="mb-3">
                         <label for="Input1" class="form-label">Username(Email): </label>
-                        <input type="email" class="form-control" id="Input1" placeholder="rohit123@gmail.com" name="username">
+                        <input type="email" class="form-control" id="Input1" placeholder="rohit123@gmail.com" name="username" required>
                     </div>
                     <div class="mb-3">
                         <label for="Input2" class="form-label">Password: </label>
-                        <input type="password" class="form-control" id="Input2" name="password">
+                        <input type="password" class="form-control" id="Input2" name="password" required>
                     </div> 
                     <div class="mb-3">
                         <label for="Input3" class="form-label">Full Name: </label>
-                        <input type="text" class="form-control" id="Input3" placeholder="Rohit Sharma" name="full_name">
+                        <input type="text" class="form-control" id="Input3" placeholder="Rohit Sharma" name="full_name" required>
                     </div> 
                     <div class="mb-3">
                         <label for="Input4" class="form-label">Qualification: </label>
@@ -43,5 +58,11 @@
             </div>
         </div>
     </div>
+
+    <script>
+        setTimeout(() => document.getElementById('flash-message')?.remove(), 3000);
+    </script> 
+
+
 </body>
 </html>
