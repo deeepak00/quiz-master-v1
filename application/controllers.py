@@ -69,9 +69,11 @@ def add_subject():
         if action=='Save':
             name = request.form.get('name')
             description = request.form.get('description')
-            new_subject = Subject(name=name,description=description)
-            db.session.add(new_subject)
-            db.session.commit()
+            if name!="":
+                new_subject = Subject(name=name,description=description)
+                db.session.add(new_subject)
+                db.session.commit()
+                return redirect('/admin_dash')
             return redirect('/admin_dash')
         if action=='Cancel':
             return redirect('/admin_dash')
@@ -93,7 +95,9 @@ def edit_subject(subject_id):
             if action=="Save":
                 subject.name = request.form.get('name')
                 subject.description = request.form.get('description')
-                db.session.commit()
+                if subject.name!="":
+                    db.session.commit()
+                    return redirect("/admin_dash")
                 return redirect("/admin_dash")
             if action=="Cancel":
                 return redirect('/admin_dash')
@@ -124,10 +128,12 @@ def add_chapter(subject_id):
                 id = subject.id
                 name = request.form.get('c_name')
                 description = request.form.get('description')
-                new_chapter = Chapter(name=name,description=description,subject_id=id)
-                db.session.add(new_chapter)
-                db.session.commit()
-                return redirect('/admin_dash')
+                if name!="":
+                    new_chapter = Chapter(name=name,description=description,subject_id=id)
+                    db.session.add(new_chapter)
+                    db.session.commit()
+                    return redirect('/admin_dash')
+                return redirect('admin_dash')
             if action=='Cancel':
                 return redirect('/admin_dash')
         return render_template('add_chapter.html',subject = subject)
@@ -148,10 +154,11 @@ def edit_chapter(chapter_id):
         if request.method=='POST':
             action = request.form.get('action')
             if action=="Save":
-                chapter = Chapter.query.filter(Chapter.id==chapter_id).first()
                 chapter.name = request.form.get('c_name')
                 chapter.description = request.form.get('description')
-                db.session.commit()
+                if chapter.name!="":
+                    db.session.commit()
+                    return redirect('/admin_dash')
                 return redirect('/admin_dash')
             if action=="Cancel":
                 return redirect('/admin_dash')
@@ -179,17 +186,29 @@ def add_quiz():
         action = request.form.get("action")
         if action=="Save":
             title = request.form.get('name')
-            doq = datetime.strptime(request.form.get('date'), "%Y-%m-%d").date() 
+            if request.form.get('date'):
+                doq = datetime.strptime(request.form.get('date'), "%Y-%m-%d").date()
+            else:
+                doq = datetime.strptime('2000-12-12',"%Y-%m-%d").date()
             duration = request.form.get('duration')
             remark = request.form.get('remark')
             chapter_id = request.form.get('c_id')
-            exist = Quiz.query.filter(Quiz.title==title).first()
-            if not exist:
-                new_quiz = Quiz(title=title,date_of_quiz=doq,time_duration=duration,remarks=remark,chapter_id=chapter_id)
-                db.session.add(new_quiz)
-                db.session.commit()
-                return redirect('/admin_quiz')
-            return "Quiz Name Already Exist"
+
+            if title!="":
+                exist1 = Chapter.query.filter(Chapter.id==chapter_id).first()
+                exist2 = Quiz.query.filter(Quiz.title==title).first()
+                if exist1:
+                    if not exist2:
+                        new_quiz = Quiz(title=title,date_of_quiz=doq,time_duration=duration,remarks=remark,chapter_id=chapter_id)
+                        db.session.add(new_quiz)
+                        db.session.commit()
+                        return redirect('/admin_quiz')
+                    flash("This quiz already exist",'qae')
+                    return redirect('/add_quiz')
+                flash("Entered chapter id does not exist",'cne')
+                return redirect('/add_quiz')
+            return redirect('/admin_quiz')
+            
         if action=="Cancel":
             return redirect("/admin_quiz")
     return render_template('add_quiz.html',chapters= Chapter.query.all())
@@ -246,10 +265,11 @@ def add_question(quiz_id):
                 chapter_id = quizz.chapter_id
                 quiz_id = quizz.id
 
-                new_question = Question(title=title,question=question,option_a=option_a,option_b=option_b,option_c=option_c,option_d=option_d,correct_option=correct_option,chapter_id=chapter_id,quiz_id=quiz_id)
-
-                db.session.add(new_question)
-                db.session.commit()
+                if title!="" and question!="" and option_a!="" and option_b!="" and option_c!="" and option_d!="" and correct_option!="":
+                    new_question = Question(title=title,question=question,option_a=option_a,option_b=option_b,option_c=option_c,option_d=option_d,correct_option=correct_option,chapter_id=chapter_id,quiz_id=quiz_id)
+                    db.session.add(new_question)
+                    db.session.commit()
+                    return redirect('/admin_quiz')
                 return redirect('/admin_quiz')
             if action=="Close":
                 return redirect('/admin_quiz')
@@ -278,7 +298,9 @@ def edit_question(question_id):
                 question.option_c = request.form.get('op3')
                 question.option_d = request.form.get('op4')
                 question.correct_option = request.form.get('rop')
-                db.session.commit()
+                if question.title!="" and question.question!="" and question.option_a!="" and question.option_b!="" and question.option_c!="" and question.option_d!="" and question.correct_option!="":
+                    db.session.commit()
+                    return redirect('/admin_quiz')
                 return redirect('/admin_quiz')
             if action=="Close":
                 return redirect('/admin_quiz')
@@ -294,9 +316,12 @@ def question_read(question_id):
     
 @app.route('/admin_summary')
 def summary():
-    total_user = User.query.count()  # Get total users efficiently
-    if total_user == 0:
-        total_user = 1  # Avoid division by zero
+    total_user = User.query.count()
+    total_subjects = Subject.query.count()
+    total_chapters = Chapter.query.count()
+    total_quizzes = Quiz.query.count()
+    total_questions = Question.query.count()
+    total_attempts = UserQuiz.query.count()
     
     sub_maxscore_dict = {}
     sub_usercount_dict = {}
@@ -306,23 +331,27 @@ def summary():
          # Reset for each subject
         sub_user = 0 
         sub_maxscore = 0
-        total_questions = 1  # Default to 1 to avoid division by zero
+        sub_minscore = 1000
+        total_subject_questions = 1  # Default to 1 to avoid division by zero
 
         for chapter in subject.chapters:
             for quiz in chapter.quizes:
                 if quiz.scores and quiz.questions:  # Check if scores and questions exist
                     max_quiz_score = max(score.total_scored for score in quiz.scores)
+                    min_quiz_score = min(score.total_scored for score in quiz.scores)
                     num_questions = len(quiz.questions)  # Total number of questions in the quiz
 
                     if max_quiz_score > sub_maxscore:
                         sub_maxscore = max_quiz_score
-                        total_questions = num_questions
+                        total_subject_questions = num_questions
+                    if min_quiz_score<sub_minscore:
+                        sub_minscore = min_quiz_score
 
                     for _ in quiz.users:  # Count users who took this quiz
                         sub_user += 1
-
-        sub_usercount_dict[subject.name] = round(min((sub_user / total_user) * 100, 100), 2)
-        sub_maxscore_dict[subject.name] = round(min((sub_maxscore / total_questions) * 100, 100), 2)
+        if total_user:
+            sub_usercount_dict[subject.name] = round(min((sub_user / total_user) * 100, 100), 2)
+            sub_maxscore_dict[subject.name] = round(min((sub_maxscore / total_subject_questions) * 100, 100), 2)
 
 
     if sub_usercount_dict:
@@ -331,7 +360,39 @@ def summary():
     if sub_maxscore_dict:
         generate_subject_top_scores_chart(sub_maxscore_dict)
 
-    return render_template('admin_summary.html',sub_usercount_dict=sub_usercount_dict)
+    recent_attempts = (
+    db.session.query(
+        User.username, 
+        Quiz.title, 
+        Score.total_scored, 
+        Score.timestamp, 
+        db.func.count(Question.id).label("total_questions")
+    )
+    .join(Score, User.id == Score.user_id)
+    .join(Quiz, Quiz.id == Score.quiz_id)
+    .join(Question, Question.quiz_id == Quiz.id)
+    .group_by(User.username, Quiz.title, Score.total_scored, Score.timestamp)
+    .order_by(Score.timestamp.desc())
+    .limit(5)
+    .all()
+    )
+
+
+    # Top and Lowest Performing Subjects
+    subject_avg_scores = {
+        subject.name: round(
+            sum(score.total_scored for chapter in subject.chapters for quiz in chapter.quizes for score in quiz.scores) / 
+            max(1, sum(len(quiz.scores) for chapter in subject.chapters for quiz in chapter.quizes)), 2
+        ) 
+        for subject in subjects
+    }
+
+    top_subject = max(subject_avg_scores, key=subject_avg_scores.get, default="N/A")
+    lowest_subject = min(subject_avg_scores, key=subject_avg_scores.get, default="N/A")
+
+
+
+    return render_template('admin_summary.html',subjects = subjects,total_user=total_user,total_subjects=total_subjects,total_chapters=total_chapters,total_quizzes=total_quizzes,total_questions=total_questions,total_attempts=total_attempts, recent_attempts=recent_attempts,top_subject=top_subject,lowest_subject=lowest_subject)
 
 
 def generate_subject_attempt_by_user(data):
@@ -380,7 +441,7 @@ def generate_subject_top_scores_chart(sub_maxscore_dict):
     # Save the chart in 'static' folder
     plt.savefig("static/subject-top-scores.png", dpi=150, bbox_inches='tight')
     plt.close()
-    
+   
     
 
 @app.route("/search", methods=['POST'])
@@ -445,8 +506,8 @@ def user_quizview(user_id,quiz_id):
 @app.route('/user_score/<int:user_id>', methods=['GET','POST'])
 def user_score(user_id):
     user = User.query.filter(User.id==user_id).first()
-    quizes = user.quizes
-    return render_template('user_score.html',user = user, quizes=quizes)
+    quizes  = user.quizes
+    return render_template('user_score.html',user = user, quizes = quizes)
 
 
 @app.route("/user_summary/<int:user_id>", methods=['GET','POST'])
@@ -459,6 +520,8 @@ def user_summary(user_id):
     quiz = Quiz.query.all()
     for i in quiz:
         total_number_of_quiz+=1
+
+    
     quizes = user.quizes
     for quiz in quizes:
         chapter = Chapter.query.filter(Chapter.id==quiz.chapter_id).first()
@@ -535,7 +598,7 @@ def subject_wise_quiz_chart(data,total):
     plt.xticks(rotation=20)  # Rotate labels for readability
     plt.ylim(0, total)
     plt.yticks(range(int(min(count)), int(max(count))+1))
-    
+        
     
 
     for i, v in enumerate(count):
@@ -610,11 +673,7 @@ def quiz_handle(user_id, quiz_id):
         user.quizes.append(quiz)
         db.session.commit()
 
-    exist2 = Score.query.filter(Score.user_id==user.id, Score.quiz_id==quiz.id).first()
-    if not exist2:
-        score = Score(total_scored=0,user_id=user.id,quiz_id=quiz.id)
-        db.session.add(score)
-        db.session.commit()
+
 
     questions = quiz.questions
     total_scored = 0
@@ -622,14 +681,17 @@ def quiz_handle(user_id, quiz_id):
         for question in questions:
             if request.form.get(f'{question.id}') == question.correct_option:
                 total_scored += 1
-        score = Score.query.filter(Score.user_id==user.id, Score.quiz_id==quiz.id).first()
-        score.total_scored = total_scored
+        score = Score(total_scored=total_scored, user_id=user.id, quiz_id = quiz.id)
+        db.session.add(score)
         db.session.commit()
         return render_template('user_result.html', user=user, quiz = quiz , total_scored = total_scored)
     
-    hh, mm = map(int, quiz.time_duration.split(":"))
-    total_seconds = (hh * 3600) + (mm * 60)
-    
+    if quiz.time_duration:
+        hh, mm = map(int, quiz.time_duration.split(":"))
+        total_seconds = (hh * 3600) + (mm * 60)
+    else:
+        total_seconds = 0
+        
     return render_template(
         'quiz_page.html',
         questions=questions, 

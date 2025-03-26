@@ -10,8 +10,8 @@ def get_local_time():
 class Admin(db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True, default=1)
-    username = db.Column(db.String(50), unique=True, nullable=False, default='admin123')
-    password = db.Column(db.String(50), nullable=False, default='admin@123')
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(50), nullable=False,)
 
 class User(db.Model):
     __tablename__='users'
@@ -67,7 +67,7 @@ class UserQuiz(db.Model):
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String, unique=True, nullable=False)
+    title = db.Column(db.String, nullable=False)
     question = db.Column(db.Text, nullable=False)
     option_a = db.Column(db.String, nullable=False)
     option_b = db.Column(db.String, nullable=False)

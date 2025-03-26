@@ -77,6 +77,20 @@
                 </div>
               </nav>
         </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category in ['qae','cne'] %}
+                        <div id="flash-message" role="alert" style="margin-left: 417px; position: relative;top: 25px;">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
         <div id="canvas" style="display: flex; gap: 10px;">
             <div id="form-body" style="flex: 7;">
                 <h3>Add New Quiz</h3><br>
@@ -130,5 +144,12 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+        setTimeout(() => document.getElementById('flash-message')?.remove(), 3000);
+    </script> 
+
+    
 </body>
 </html>

@@ -10,6 +10,14 @@
         .navbar{
             padding-top: 1.5rem;
         }
+
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+        .card { border: 1px solid #ddd; padding: 15px; border-radius: 5px; width: 45%; }
+        img { width: 100%; max-width: 400px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
     </style>
 </head>
 <body>
@@ -58,13 +66,74 @@
                 </div>
               </nav>
         </div>
-        <div style="margin:auto; margin-top: 100px; overflow-y: auto;display: flex; gap: 60px;">
+          <!-- <div>
+            Total User Registered : {{total_user}} <br>
+            Total Subject created : {{total_subjects}} <br>
+            Total Chapter created : {{total_chapters}} <br>
+            Total Quiz created    : {{total_quizzes}} <br>
+            Total Question created: {{total_questions}}
+          </div>
+          <div style="margin:auto; margin-top: 100px; overflow-y: auto;display: flex; gap: 60px;">
+            {% if subjects %}
             <img src="{{ url_for('static', filename='subject-top-scores.png') }}" alt="Top Scores Chart">
-          <img src="{{ url_for('static', filename='subject_attempt_percentage.png') }}" alt="Top Scores Chart">
-        </div>  
+            <img src="{{ url_for('static', filename='subject_attempt_percentage.png') }}" alt="Top Scores Chart">
+            {% else %}
+            <h4 style="text-align: center; margin: auto;">Nothing to show. Add Subjects/chapters/quizes/questions.</h4>
+            {% endif %}
+          </div>  -->
+
+          <div class="container">
+            <div class="card">
+                <h3>Platform Overview</h3>
+                <p><strong>Total Users:</strong> {{ total_user }}</p>
+                <p><strong>Total Quizzes:</strong> {{ total_quizzes }}</p>
+                <p><strong>Total Questions:</strong> {{ total_questions }}</p>
+                <p><strong>Total Quiz Attempts:</strong> {{ total_attempts }}</p>
+            </div>
+        
+            <div class="card">
+                <h3>Performance Metrics</h3>
+                <p><strong>Top Subject:</strong> {{ top_subject }}</p>
+                <p><strong>Lowest Subject:</strong> {{ lowest_subject }}</p>
+            </div>
+        
+            <div class="card">
+                <h3>Subject wise top score</h3>
+                {% if subjects %}
+                <img src="{{ url_for('static', filename='subject-top-scores.png') }}" alt="Top Scores Chart">
+                {% else %}
+                <h6 style="text-align: center; margin: auto;">Nothing to show. Add Subjects/chapters/quizes/questions.</h6>
+                {% endif %}
+            </div>
+        
+            <div class="card">
+                <h3>Subject wise Attempting percentage</h3>
+                {% if subjects %}
+                <img src="{{ url_for('static', filename='subject_attempt_percentage.png') }}" alt="Top Scores Chart">
+                {% else %}
+                <h6 style="text-align: center; margin: auto;">Nothing to show. Add Subjects/chapters/quizes/questions.</h6>
+                {% endif %}
+            </div>
+            
+        
+            <div class="card" style="width: 92%;">
+                <h3>Recent Quiz Activity</h3>
+                <table style="table-layout: auto;">
+                    <tr><th>User</th><th>Quiz</th><th>Score</th><th>Date</th></tr>
+                    {% for user, quiz, score, date, total_questions in recent_attempts %}
+                    <tr><td>{{ user }}</td><td>{{ quiz }}</td><td>{{ score }}/{{ total_questions }}</td><td>{{ date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+         
     </div>
 </body>
 </html>
+
+
+
+
 
 
 

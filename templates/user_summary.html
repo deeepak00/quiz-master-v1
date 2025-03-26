@@ -62,10 +62,9 @@
             </nav>
         </div>
         <div style="margin:auto; margin-top: 100px; overflow-y: auto;display: flex; gap: 50px; padding: 10px;">
-            {% if total==0 %}
-            No quiz are there <br> For Subject Wise number of quiz attempt <br> There should be atleast one quiz to perform.
-            {% else %}
+            {% if total %}
             <img src="{{ url_for('static', filename='subject-wise-quiz-chart.png') }}" alt="Top Scores Chart">
+            {% else %}
             {% endif %}
             <img src="{{ url_for('static', filename='subjectwise-score.png') }}" alt="Top Scores Chart">
 

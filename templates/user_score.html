@@ -61,7 +61,7 @@
                 <h3 style="text-align: center;">Quizzes Score</h3>
                 <div id="upcoming-quiz-body">
                     {% if not quizes %}
-                    <p>No quizz attempted yet</p>
+                    <p style="text-align: center;margin: auto;margin-top: 200px;">No quizz attempted yet</p>
                     {% else %}
                     <table>
                         <thead>
@@ -74,12 +74,12 @@
                         </thead>
                         <tbody>
                             {% set ns = namespace(counter = 0) %}
-                            {% for quiz in quizes %}
+                            {% for quiz in quizes[::-1] %}
                                 {% for score in quiz.scores %}
                                 {% set ns.counter = ns.counter + 1 %}
                                     <tr>
                                         <td>{{ns.counter}}</td>
-                                        <td><a href="/quiz_read/{{ quiz.id }}">{{ quiz.title }}</a></td>
+                                        <td><a href="/user_quiz_read/{{user.id}}/{{ quiz.id }}">{{ quiz.title }}</a></td>
                                         <td>{{ score.total_scored }}/{{quiz.questions | length}}</td>
                                         <td>{{ score.timestamp.strftime('%d-%m-%Y   ||   %H:%M:%S') }}</td>
                                     </tr>

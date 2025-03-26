@@ -15,6 +15,13 @@ def create_app():
     app.app_context().push()
     return app,api
 
+def create_admin():
+    admin = Admin.query.first()
+    if not admin:
+        admin = Admin(id=1,username='admin12345@gmail.com',password='12345')
+        db.session.add(admin)
+        db.session.commit()
+
 app,api = create_app()
 from application.controllers import *
 
@@ -22,4 +29,6 @@ from application.api import *
 
 
 if __name__ == "__main__":
+    db.create_all()
+    create_admin()
     app.run()

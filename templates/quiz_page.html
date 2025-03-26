@@ -67,6 +67,8 @@
         </div>
     </div>
 
+    {% if quiz_duration %}
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let duration = parseInt("{{ quiz_duration }}", 10); // Ensure it's an integer
@@ -90,6 +92,7 @@
             updateTimer(); // Start timer
         });
     </script>
+    {% endif %}
     
 </body>
 </html>
