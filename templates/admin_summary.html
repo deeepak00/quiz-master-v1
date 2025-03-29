@@ -93,8 +93,8 @@
         
             <div class="card">
                 <h3>Performance Metrics</h3>
-                <p><strong>Top Subject:</strong> {{ top_subject }}</p>
-                <p><strong>Lowest Subject:</strong> {{ lowest_subject }}</p>
+                <p><strong>Top Subject:</strong> {% for i in top_subject %}{{ i }} {% endfor %}</p>
+                <p><strong>Lowest Subject:</strong>{% for i in lowest_subject %}{{ i }}{% endfor %}</p>
             </div>
         
             <div class="card">
@@ -107,7 +107,7 @@
             </div>
         
             <div class="card">
-                <h3>Subject wise Attempting percentage</h3>
+                <h3>Subject wise user attempt</h3>
                 {% if subjects %}
                 <img src="{{ url_for('static', filename='subject_attempt_percentage.png') }}" alt="Top Scores Chart">
                 {% else %}

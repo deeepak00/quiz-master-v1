@@ -228,6 +228,7 @@ def edit_quiz(quiz_id):
         if request.method=='POST':
             action = request.form.get('action')
             if action=="Save":
+                quiz.title = request.form.get('name')
                 quiz.date_of_quiz = datetime.strptime(request.form.get('date'), "%Y-%m-%d").date() 
                 quiz.time_duration = request.form.get('duration')
                 quiz.remarks = request.form.get('remark')
@@ -328,31 +329,31 @@ def summary():
 
     subjects = Subject.query.all()
     for subject in subjects:
-         # Reset for each subject
-        sub_user = 0 
+        sub_users_set = set()
         sub_maxscore = 0
-        sub_minscore = 1000
-        total_subject_questions = 1  # Default to 1 to avoid division by zero
+        sub_minscore = float('inf')
+        total_subject_questions = 1 
 
         for chapter in subject.chapters:
             for quiz in chapter.quizes:
-                if quiz.scores and quiz.questions:  # Check if scores and questions exist
-                    max_quiz_score = max(score.total_scored for score in quiz.scores)
-                    min_quiz_score = min(score.total_scored for score in quiz.scores)
-                    num_questions = len(quiz.questions)  # Total number of questions in the quiz
-
-                    if max_quiz_score > sub_maxscore:
-                        sub_maxscore = max_quiz_score
-                        total_subject_questions = num_questions
+                if quiz.scores and quiz.questions: 
+                    max_quiz_score = max(score.total_scored for score in quiz.scores) if quiz.scores else 0
+                    min_quiz_score = min(score.total_scored for score in quiz.scores) if quiz.scores else float('inf')
+                    num_questions = len(quiz.questions) if quiz.questions else 1
+                    if (max_quiz_score/num_questions) > sub_maxscore:
+                        sub_maxscore = max_quiz_score/num_questions
                     if min_quiz_score<sub_minscore:
                         sub_minscore = min_quiz_score
 
-                    for _ in quiz.users:  # Count users who took this quiz
-                        sub_user += 1
+                    for user in quiz.users:  
+                        sub_users_set.add(user.id)
+        sub_user = len(sub_users_set)
         if total_user:
             sub_usercount_dict[subject.name] = round(min((sub_user / total_user) * 100, 100), 2)
-            sub_maxscore_dict[subject.name] = round(min((sub_maxscore / total_subject_questions) * 100, 100), 2)
-
+            sub_maxscore_dict[subject.name] = round(min((sub_maxscore) * 100, 100), 2)
+        if not total_user or not total_subjects:
+            sub_usercount_dict[subject.name]=0
+            sub_maxscore_dict[subject.name]=0
 
     if sub_usercount_dict:
         generate_subject_attempt_by_user(sub_usercount_dict)
@@ -376,19 +377,35 @@ def summary():
     .limit(5)
     .all()
     )
+    
+
+    maxi = max(sub_maxscore_dict.values())
+    mini = min(sub_maxscore_dict.values())
+
+    top_subject = [name for name,value in sub_maxscore_dict.items() if value==maxi]
+    lowest_subject = [name for name,value in sub_maxscore_dict.items() if value==mini]
+    
+    # maxi = Score.query.order_by(db.desc(Score.total_scored)).first()
+    # mini = Score.query.order_by(db.asc(Score.total_scored)).first()
+
+    # top_subject=set()
+    # lowest_subject=set()
+
+    # if maxi and mini:
+    #     max_score = Score.query.filter(Score.total_scored==maxi.total_scored).order_by(db.desc(Score.timestamp)).all()
+    #     min_score = Score.query.filter(Score.total_scored==mini.total_scored).order_by(db.asc(Score.timestamp)).all()
+    #     for subject in subjects:
+    #         for chapter in subject.chapters:
+    #             for quiz in chapter.quizes:
+    #                 if any(i.quiz_id==quiz.id for i in max_score):
+    #                     top_subject.add(subject.name)
+    #                 if any(i.quiz_id==quiz.id for i in min_score):
+    #                     lowest_subject.add(subject.name)
+    # top_subject=list(top_subject) if top_subject else ["N/A"]
+    # lowest_subject=list(lowest_subject) if lowest_subject else ["N/A"]
+    # print(top_subject, lowest_subject)
 
 
-    # Top and Lowest Performing Subjects
-    subject_avg_scores = {
-        subject.name: round(
-            sum(score.total_scored for chapter in subject.chapters for quiz in chapter.quizes for score in quiz.scores) / 
-            max(1, sum(len(quiz.scores) for chapter in subject.chapters for quiz in chapter.quizes)), 2
-        ) 
-        for subject in subjects
-    }
-
-    top_subject = max(subject_avg_scores, key=subject_avg_scores.get, default="N/A")
-    lowest_subject = min(subject_avg_scores, key=subject_avg_scores.get, default="N/A")
 
 
 
@@ -403,7 +420,7 @@ def generate_subject_attempt_by_user(data):
 
     plt.bar(labels,sizes,color='black')
     plt.xlabel('subjects')
-    plt.ylabel('percentage attempt')
+    plt.ylabel('user attempt in %')
     plt.xticks(rotation=20)
     plt.ylim(0,100)
 
@@ -412,7 +429,7 @@ def generate_subject_attempt_by_user(data):
 
     plt.grid(axis='y',linestyle='--',alpha=0.2)
 
-    plt.title("Subject wise attempting percentage")
+    plt.title("subject wise user attempt")
 
     plt.savefig("static/subject_attempt_percentage.png", dpi=140, bbox_inches="tight")
     plt.close()
@@ -426,8 +443,8 @@ def generate_subject_top_scores_chart(sub_maxscore_dict):
     # All bars will be black
     plt.bar(subjects, scores, color='black')
 
-    plt.xlabel("Subjects")
-    plt.ylabel("Top Score")
+    plt.xlabel("subjects")
+    plt.ylabel("top score in %")
     plt.title("Subject Wise Top Scores")
     plt.xticks(rotation=20)  # Rotate labels for readability
     plt.ylim(0,100)
@@ -523,37 +540,46 @@ def user_summary(user_id):
 
     
     quizes = user.quizes
-    for quiz in quizes:
-        chapter = Chapter.query.filter(Chapter.id==quiz.chapter_id).first()
-        subject = Subject.query.filter(Subject.id==chapter.subject_id).first()
 
-        if subject.name not in subjectwise_no_of_quiz:
-            subjectwise_no_of_quiz[subject.name]=1
-        else:
-            subjectwise_no_of_quiz[subject.name]+=1
-        
-        total_score = sum([i.total_scored for i in quiz.scores])
-        no_of_ques = sum([1 for _ in quiz.questions])
-        if subject.name not in subjectwise_score:
-            subjectwise_score[subject.name]=total_score/no_of_ques
-        else:
-            subjectwise_score[subject.name]+=total_score/no_of_ques
-
-    for x in subjectwise_score:
-        subjectwise_score[x] = round((subjectwise_score[x]/subjectwise_no_of_quiz[x])*100,2)
- 
-    for x in subjects:
-        if x.name not in subjectwise_no_of_quiz:
-            subjectwise_no_of_quiz[x.name]=0
-        if x.name not in subjectwise_score:
-            subjectwise_score[x.name]=0
+    if quizes:
     
+        for quiz in quizes:
+            total_score=0
+            no_of_ques=0
+            chapter = Chapter.query.filter(Chapter.id==quiz.chapter_id).first()
+            subject = Subject.query.filter(Subject.id==chapter.subject_id).first()
 
+            if subject.name not in subjectwise_no_of_quiz:
+                subjectwise_no_of_quiz[subject.name]=1
+            else:
+                subjectwise_no_of_quiz[subject.name]+=1
+            
+            total_score += quiz.scores[-1].total_scored
+            no_of_ques = no_of_ques+ sum([1 for _ in quiz.questions])
+            if subject.name not in subjectwise_score:
+                subjectwise_score[subject.name]=total_score/no_of_ques
+            else:
+                subjectwise_score[subject.name]+=total_score/no_of_ques
+
+
+        for x in subjectwise_score:
+            subjectwise_score[x] = round((subjectwise_score[x]/subjectwise_no_of_quiz[x])*100,2)
     
-    subject_wise_quiz_chart(subjectwise_no_of_quiz,total_number_of_quiz)
-    subjectwise_score_chart(subjectwise_score)
+        for x in subjects:
+            if x.name not in subjectwise_no_of_quiz:
+                subjectwise_no_of_quiz[x.name]=0
+            if x.name not in subjectwise_score:
+                subjectwise_score[x.name]=0
+    else:
+        for subject in subjects:
+            subjectwise_no_of_quiz[subject.name]=0
+            subjectwise_score[subject.name]=0
+    if subjectwise_no_of_quiz:
+        subject_wise_quiz_chart(subjectwise_no_of_quiz,total_number_of_quiz)
+        subjectwise_score_chart(subjectwise_score)
 
-    return render_template('user_summary.html',user=user, total = total_number_of_quiz)
+    return render_template('user_summary.html',user=user, subjects=subjects, total = total_number_of_quiz)
+
 
 def subjectwise_score_chart(data):
     subjects = list(data.keys())  # X-axis (Subjects)

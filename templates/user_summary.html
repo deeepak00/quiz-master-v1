@@ -62,11 +62,13 @@
             </nav>
         </div>
         <div style="margin:auto; margin-top: 100px; overflow-y: auto;display: flex; gap: 50px; padding: 10px;">
-            {% if total %}
+            {% if subjects|length %}
             <img src="{{ url_for('static', filename='subject-wise-quiz-chart.png') }}" alt="Top Scores Chart">
-            {% else %}
-            {% endif %}
             <img src="{{ url_for('static', filename='subjectwise-score.png') }}" alt="Top Scores Chart">
+            {% else %}
+            <h4 style="text-align: center; margin: auto; margin-top: 30px;">Nothing to show yet</h4>
+            {% endif %}
+            
 
         </div>   
     </div>
